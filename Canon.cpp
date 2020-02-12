@@ -12,7 +12,7 @@ Canon::Canon(GameObject * parent)
 //初期化
 void Canon ::Initialize()
 {
-	//モデルデータのロード
+	//モデルデータのロード戦車上部
 	hModel_ = Model::Load("TankHead.fbx");
 	assert(hModel_ >= 0);
 }
