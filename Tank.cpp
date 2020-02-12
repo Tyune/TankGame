@@ -2,6 +2,7 @@
 #include "Engine/Model.h"
 #include "Engine/Input.h"
 #include "Engine/Camera.h"
+#include "Ground.h"
 
 //コンストラクタ
 Tank::Tank(GameObject * parent)
@@ -24,6 +25,36 @@ void Tank::Initialize()
 
 //更新
 void Tank::Update()
+{
+	Move();
+
+	FitHeightToGround();
+}
+
+//高さを地面に合わせる
+void Tank::FitHeightToGround()
+{
+	//地面に添わせる
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHandle();    //モデル番号を取得
+
+	RayCastData data;
+	data.start = transform_.position_;   //レイの発射位置
+	data.start.vecY = 0.0f,   //レイの発射位置
+
+		data.dir = XMVectorSet(0, -1, 0, 0); //レイの方向
+	Model::RayCast(hGroundModel, &data); //レイを発射
+
+										 //レイが当たったら
+	if (data.hit)
+	{
+		//その分位置を下げる
+		transform_.position_.vecY = -data.dist;
+	}
+}
+
+//移動処理
+void Tank::Move() 
 {
 	XMVECTOR move = { 0.0f, 0.0f, 0.1f, 0.0f };
 
@@ -48,9 +79,16 @@ void Tank::Update()
 	{
 		transform_.rotate_.vecY += 3.0f;
 	}
-	Camera::SetTarget(transform_.position_);
-}
 
+	Camera::SetTarget(transform_.position_);
+
+	XMVECTOR camVec = { 0.0f,8.0f,-10.0f };
+	XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.vecY));
+	camVec = XMVector3TransformCoord(camVec, mY);  //ベクトルを行列に適応させる
+	Camera::SetPosition(transform_.position_ + camVec);
+
+	
+}
 //描画
 void Tank::Draw()
 {
